@@ -1,0 +1,53 @@
+{
+  "name": "medical-appointment-system",
+  "version": "1.0.0",
+"scripts": {
+    "test": "jest",
+    "dev:api": "cross-env PORT=3002 ts-node src/infrastructure/api/server.ts",
+    "dev:frontend": "next dev src/ui",
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:frontend\""
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.15.18",
+    "@types/qrcode": "^1.5.5",
+    "@types/redis": "^4.0.10",
+    "@types/supertest": "^6.0.3",
+    "@types/ws": "^8.18.1",
+    "concurrently": "^7.0.0",
+    "cross-env": "^7.0.3",
+    "jest": "^29.7.0",
+    "next": "^14.0.0",
+    "supertest": "^7.1.1",
+    "ts-jest": "^29.3.3",
+    "ts-node": "^10.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@adiwajshing/baileys": "^4.4.0",
+    "@adiwajshing/keyed-db": "^0.2.4",
+    "@fullcalendar/daygrid": "^6.1.17",
+    "@fullcalendar/interaction": "^6.1.17",
+    "@fullcalendar/list": "^6.1.17",
+    "@fullcalendar/timegrid": "^6.1.17",
+    "@types/chart.js": "^2.9.41",
+    "@types/dotenv": "^6.1.1",
+    "@types/pg": "^8.15.2",
+    "@types/react": "^19.1.4",
+    "bullmq": "^1.70.0",
+    "chart.js": "^4.4.9",
+    "dotenv": "^16.5.0",
+    "express": "^4.21.2",
+    "ioredis": "^5.0.0",
+    "pg": "^8.16.0",
+    "pino-pretty": "^13.0.0",
+    "qrcode": "^1.5.1",
+    "react": "^18.0.0",
+    "react-chartjs-2": "^5.3.0",
+    "react-dom": "^18.0.0",
+    "react-hot-toast": "^2.5.2",
+    "redis": "^5.0.1",
+    "socket.io-client": "^4.8.1"
+  }
+}
