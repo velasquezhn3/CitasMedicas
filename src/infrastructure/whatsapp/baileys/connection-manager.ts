@@ -2,7 +2,8 @@
 import QRCode from 'qrcode';
 import pino from 'pino';
 
-import { DisconnectReason, useMultiFileAuthState, proto } from '@adiwajshing/baileys';
+import { DisconnectReason, proto } from '@adiwajshing/baileys';
+import { useRedisAuthState } from './session-store';
 import makeWASocket from '@adiwajshing/baileys';
 import { Boom } from '@hapi/boom';
 import { EventEmitter } from 'events';
@@ -45,7 +46,8 @@ export class ConnectionManager extends EventEmitter {
       // Do not throw error, allow new connection creation without existing auth state
     }
 
-    const { state, saveCreds } = await useMultiFileAuthState(`./auth/${id}`);
+    const { state: statePromise, saveCreds } = await useRedisAuthState(id);
+    const state = await statePromise;
 
     console.log('Auth state keys:', Object.keys(state));
     // Do not throw error if state is empty, allow new connection creation

@@ -1,7 +1,7 @@
 {
   "name": "medical-appointment-system",
   "version": "1.0.0",
-"scripts": {
+  "scripts": {
     "test": "jest",
     "dev:api": "cross-env PORT=3002 ts-node src/infrastructure/api/server.ts",
     "dev:frontend": "next dev src/ui",
@@ -33,6 +33,7 @@
     "@fullcalendar/timegrid": "^6.1.17",
     "@types/chart.js": "^2.9.41",
     "@types/dotenv": "^6.1.1",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/pg": "^8.15.2",
     "@types/react": "^19.1.4",
     "bullmq": "^1.70.0",
@@ -40,6 +41,7 @@
     "dotenv": "^16.5.0",
     "express": "^4.21.2",
     "ioredis": "^5.0.0",
+    "jsonwebtoken": "^9.0.2",
     "pg": "^8.16.0",
     "pino-pretty": "^13.0.0",
     "qrcode": "^1.5.1",

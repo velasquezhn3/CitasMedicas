@@ -1,3 +1,5 @@
+import jwtAuthMiddleware from '../../../auth/jwtAuthMiddleware';
+
 import express, { Request, Response } from 'express';
 import http from 'http';
 import dotenv from 'dotenv';
@@ -21,6 +23,9 @@ const app = express();
 const port = process.env.PORT || 3001;
 app.use(express.json());
 
+// Add JWT middleware for /api routes
+app.use('/api', jwtAuthMiddleware);
+
 const agendarCita = new AgendarCita();
 
 // Logger
@@ -39,7 +44,6 @@ const logger = pino({
       }),
 });
 
-
 // Auth state
 const authFile = path.resolve(__dirname, '../../auth/default-connection.json');
 
@@ -57,11 +61,11 @@ let state: any;
 let saveCreds: any;
 
 // Inicializa el estado de autenticación de forma asíncrona y correcta
-  async function startSock() {
-    // useSingleFileAuthState returns { state, saveCreds }
-    const { state: authState, saveState } = useSingleFileAuthState(authFile);
-    saveCreds = saveState;
-    state = authState;
+async function startSock() {
+  // useSingleFileAuthState returns { state, saveCreds }
+  const { state: authState, saveState } = useSingleFileAuthState(authFile);
+  saveCreds = saveState;
+  state = authState;
 
   const { version, isLatest } = await fetchLatestBaileysVersion();
   logger.info(`Using WA version v${version.join('.')}, isLatest: ${isLatest}`);
@@ -182,6 +186,30 @@ setupWebSocket(server);
 server.listen(port, undefined, () => {
   logger.info(`API server listening on port ${port}`);
 });
+
+import process from 'process';
+
+// Add graceful shutdown handlers
+let shuttingDown = false;
+
+const shutdown = () => {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  logger.info('Shutdown initiated, closing server');
+  server.close(() => {
+    logger.info('Server closed');
+    process.exit(0);
+  });
+
+  // Force exit if not closed in 10 seconds
+  setTimeout(() => {
+    logger.error('Forcing shutdown due to timeout');
+    process.exit(1);
+  }, 10000);
+};
+
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
 
 export async function createConnection() {
   try {

@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "3002:3002"
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:15
+    env_file: .env
+
+  redis:
+    image: redis:7
