@@ -1,19 +1,21 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "commonjs",
-    "esModuleInterop": true,
+    "target": "ES2022",
+    "module": "CommonJS",
+    "lib": ["ES2022"],
     "strict": true,
+    "esModuleInterop": true,
     "skipLibCheck": true,
-    "types": ["node", "jest"],
-    "jsx": "react-jsx",
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "dist",
+    "rootDir": ".",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "@backend/*": ["src/infrastructure/*"],
-      "@ui/*": ["src/ui/*"],
-      "@whatsapp/*": ["src/whatsapp/*"]
+      "@medical/types": ["packages/types/index.ts"],
+      "@medical/config": ["packages/config"]
     }
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "build"]
+  "include": ["apps/**/*", "packages/**/*", "src/**/*"]
 }

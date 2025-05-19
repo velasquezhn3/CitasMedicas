@@ -1,61 +1,60 @@
-# Medical Appointment System
+# Medical Appointment Management System
 
-## Overview
+This is a monorepo project for managing medical appointments, built with:
 
-This project is a complete medical appointment management system with WhatsApp integration, Google Calendar sync, and admin dashboards. It includes backend services, frontend UI, and infrastructure setup.
-
-## Features
-
-- Backend API with Express (TypeScript), JWT authentication with roles, Zod validation, rate limiting, and structured logging.
-- WhatsApp integration using Baileys with Redis session persistence, hierarchical menus, and commands.
-- Google Calendar synchronization with OAuth2 and webhook push notifications.
-- Reminder system using BullMQ with priority queues and retry logic.
-- Frontend built with Next.js, Shadcn/ui, and Chart.js, including doctor dashboard, calendar views, patients CRUD, telemedicine with WebRTC, and digital signature editor.
-- Dark/light theme support.
-- Infrastructure with Docker Compose, PostgreSQL, Redis, Nginx reverse proxy with SSL, and PM2 cluster mode.
+- Turborepo monorepo
+- Yarn 3
+- Backend: Express + TypeScript
+- Frontend: Next.js 14 with App Router
+- Shared packages for config and types
+- Integrations with WhatsApp, Google Calendar
+- Queue system with BullMQ
+- Logging with Pino
+- Rate limiting
+- Docker and docker-compose for infrastructure
+- Testing with Jest and Cypress
+- CI/CD with GitHub Actions
 
 ## Installation
 
-### Prerequisites
-
-- Docker and Docker Compose installed
-- SSL certificates for Nginx placed in `nginx/certs/`
-
-### Setup
-
-1. Clone the repository
-2. Copy `.env.example` to `.env` and configure environment variables
-3. Build and start containers:
+1. Install Yarn 3 and Turborepo globally if not installed:
 
 ```bash
-docker-compose up --build
+npm install -g yarn turbo
 ```
 
-4. Access the frontend at `https://yourdomain.com` (or `http://localhost` if SSL not configured)
-5. Backend API runs on port 3001 internally
-6. PostgreSQL and Redis run as services within Docker
+2. Install dependencies:
 
-## Database
+```bash
+yarn install
+```
 
-- PostgreSQL schema is in `db-improved.sql`
-- Run migrations or import schema as needed
+3. Run development servers:
 
-## Development
+```bash
+yarn dev:frontend
+yarn dev:backend
+```
 
-- Backend source code in `src/infrastructure/api`
-- Frontend source code in `src/ui/app`
-- Use `npm run dev` scripts for local development
+## Project Structure
 
-## Deployment
+- `apps/frontend`: Next.js 14 frontend app
+- `apps/backend`: Express backend API
+- `packages/config`: shared ESLint and Prettier config
+- `packages/types`: shared TypeScript types
 
-- Use Docker Compose for production deployment
-- PM2 manages backend process in cluster mode
-- Nginx handles SSL termination and reverse proxy
+## Scripts
 
-## API Documentation
+- `yarn dev:frontend`: Run frontend dev server
+- `yarn dev:backend`: Run backend dev server
+- `yarn build`: Build all packages
+- `yarn lint`: Run linting
+- `yarn test`: Run tests
 
-- Swagger/OpenAPI documentation to be added
+## Environment Variables
 
-## License
+See `.env.example` files in respective apps for required environment variables.
 
-MIT License
+## Documentation
+
+See `ARCHITECTURE.md` and `TESTING.md` for more details.
