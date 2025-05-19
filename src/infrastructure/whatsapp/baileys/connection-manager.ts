@@ -120,26 +120,65 @@ export class ConnectionManager extends EventEmitter {
       const sender = msg.key.remoteJid!;
       const messageContent = msg.message.conversation || msg.message.extendedTextMessage?.text || '';
 
-      if (messageContent === '/backup') {
-        const phoneNumber = sender.split('@')[0];
+      // Helper functions for commands
+      async function fetchMedicalHistory(phone: string): Promise<string[]> {
+        return [
+          'Consulta 1: Diagnóstico A, Tratamiento X',
+          'Consulta 2: Diagnóstico B, Tratamiento Y',
+          'Consulta 3: Diagnóstico C, Tratamiento Z',
+        ];
+      }
 
-        async function fetchMedicalHistory(phone: string): Promise<string[]> {
-          return [
-            'Consulta 1: Diagnóstico A, Tratamiento X',
-            'Consulta 2: Diagnóstico B, Tratamiento Y',
-            'Consulta 3: Diagnóstico C, Tratamiento Z',
-          ];
+      async function fetchUserAppointments(phone: string): Promise<string[]> {
+        return [
+          'Cita 1: Cardiología - 2024-07-01 10:00',
+          'Cita 2: Dermatología - 2024-07-05 14:00',
+        ];
+      }
+
+      async function scheduleAppointment(phone: string, specialty: string, date: string): Promise<string> {
+        // Placeholder logic for scheduling
+        return `Cita agendada para ${specialty} el ${date}`;
+      }
+
+      async function cancelAppointment(phone: string, appointmentId: string): Promise<string> {
+        // Placeholder logic for cancellation
+        return `Cita con ID ${appointmentId} cancelada`;
+      }
+
+      if (messageContent.startsWith('/nuevacita')) {
+        const parts = messageContent.split(' ');
+        if (parts.length < 3) {
+          await socket.sendMessage(sender, { text: 'Uso: /nuevacita [especialidad] [fecha]' });
+          return;
         }
-
-        const historial = await fetchMedicalHistory(phoneNumber);
+        const specialty = parts[1];
+        const date = parts[2];
+        const response = await scheduleAppointment(sender.split('@')[0], specialty, date);
+        await socket.sendMessage(sender, { text: response });
+      } else if (messageContent === '/micitas') {
+        const appointments = await fetchUserAppointments(sender.split('@')[0]);
+        const response = `Sus citas:\n${appointments.join('\n')}`;
+        await socket.sendMessage(sender, { text: response });
+      } else if (messageContent.startsWith('/cancelar')) {
+        const parts = messageContent.split(' ');
+        if (parts.length < 2) {
+          await socket.sendMessage(sender, { text: 'Uso: /cancelar [id_cita]' });
+          return;
+        }
+        const appointmentId = parts[1];
+        const response = await cancelAppointment(sender.split('@')[0], appointmentId);
+        await socket.sendMessage(sender, { text: response });
+      } else if (messageContent === '/historial' || messageContent === '/backup') {
+        const historial = await fetchMedicalHistory(sender.split('@')[0]);
         const backupText = `Historial médico:\n${historial.join('\n')}`;
-
         await socket.sendMessage(sender, { text: backupText });
       } else if (messageContent === '/menu') {
+        // Hierarchical menu example using buttons and listMessages
         const buttons = [
-          { buttonId: '1', buttonText: { displayText: 'Agendar Cita' }, type: 1 },
-          { buttonId: '2', buttonText: { displayText: 'Mis Citas' }, type: 1 },
-          { buttonId: '3', buttonText: { displayText: 'Contacto' }, type: 1 },
+          { buttonId: 'agendar', buttonText: { displayText: 'Agendar Cita' }, type: 1 },
+          { buttonId: 'micitas', buttonText: { displayText: 'Mis Citas' }, type: 1 },
+          { buttonId: 'contacto', buttonText: { displayText: 'Contacto' }, type: 1 },
         ];
         const buttonMessage = {
           text: 'Seleccione una opción:',
@@ -147,10 +186,43 @@ export class ConnectionManager extends EventEmitter {
           headerType: 1,
         };
         await socket.sendMessage(sender, buttonMessage);
+      } else if (msg.message.buttonsResponseMessage) {
+        const selectedId = msg.message.buttonsResponseMessage.selectedButtonId;
+        if (selectedId === 'agendar') {
+          const listMessage = {
+            text: 'Seleccione la especialidad:',
+            buttonText: 'Especialidades',
+            sections: [
+              {
+                title: 'Especialidades',
+                rows: [
+                  { id: 'cardiologia', title: 'Cardiología' },
+                  { id: 'dermatologia', title: 'Dermatología' },
+                  { id: 'neurologia', title: 'Neurología' },
+                  { id: 'pediatria', title: 'Pediatría' },
+                ],
+              },
+            ],
+          };
+          await socket.sendMessage(sender, { listMessage });
+        } else if (selectedId === 'micitas') {
+          const appointments = await fetchUserAppointments(sender.split('@')[0]);
+          const response = `Sus citas:\n${appointments.join('\n')}`;
+          await socket.sendMessage(sender, { text: response });
+        } else if (selectedId === 'contacto') {
+          await socket.sendMessage(sender, { text: 'Puede contactarnos al +123456789' });
+        } else {
+          await socket.sendMessage(sender, { text: `Opción no reconocida: ${selectedId}` });
+        }
       } else if (msg.message.listResponseMessage) {
         const selectedId = msg.message.listResponseMessage.singleSelectReply?.selectedRowId;
         if (selectedId) {
-          await socket.sendMessage(sender, { text: `Usted seleccionó la opción ${selectedId}` });
+          if (['cardiologia', 'dermatologia', 'neurologia', 'pediatria'].includes(selectedId)) {
+            await socket.sendMessage(sender, { text: `Ha seleccionado la especialidad: ${selectedId}` });
+            // Here you could prompt for date or further steps
+          } else {
+            await socket.sendMessage(sender, { text: `Opción no reconocida: ${selectedId}` });
+          }
         }
       }
     });

@@ -1,17 +1,60 @@
 version: '3.8'
 
 services:
-  api:
-    build: .
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
     ports:
-      - "3002:3002"
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=postgresql://postgres:password@db:5432/medicaldb
+      - REDIS_URL=redis://redis:6379
     depends_on:
-      - postgres
+      - db
       - redis
 
-  postgres:
-    image: postgres:15
-    env_file: .env
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:14
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: medicaldb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 
   redis:
     image: redis:7
+    restart: always
+    volumes:
+      - redisdata:/data
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - frontend
+      - backend
+
+volumes:
+  pgdata:
+  redisdata:

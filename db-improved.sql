@@ -1,67 +1,58 @@
--- Esquema mejorado para la base de datos del proyecto Medical Appointment System
+-- PostgreSQL schema for medical appointment system
 
--- Tabla de Pacientes
-CREATE TABLE pacientes (
-    paciente_id SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    telefono VARCHAR(20),
-    fecha_nacimiento DATE,
-    direccion TEXT,
-    genero VARCHAR(10),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE roles (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(50) UNIQUE NOT NULL
 );
 
--- Tabla de Doctores
-CREATE TABLE doctores (
-    doctor_id SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    especialidad VARCHAR(100) NOT NULL, -- Ej: Cardiología, Pediatría
-    licencia_medica VARCHAR(50) UNIQUE NOT NULL,
-    telefono VARCHAR(20),
-    email VARCHAR(100) UNIQUE,
-    horario_disponible TEXT, -- Ej: "Lunes-Viernes 8:00-18:00"
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+INSERT INTO roles (name) VALUES ('admin'), ('doctor'), ('patient');
+
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  username VARCHAR(100) UNIQUE NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  role_id INT NOT NULL REFERENCES roles(id),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
 );
 
--- Tabla de Citas
-CREATE TABLE citas (
-    cita_id SERIAL PRIMARY KEY,
-    paciente_id INT NOT NULL,
-    doctor_id INT NOT NULL,
-    fecha_hora TIMESTAMP NOT NULL,
-    estado VARCHAR(20) DEFAULT 'programada', -- Ej: programada, completada, cancelada
-    notas TEXT,
-    especialidad VARCHAR(100) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (paciente_id) REFERENCES pacientes(paciente_id) ON DELETE CASCADE,
-    FOREIGN KEY (doctor_id) REFERENCES doctores(doctor_id) ON DELETE CASCADE
+CREATE TABLE specialties (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) UNIQUE NOT NULL,
+  color VARCHAR(7) NOT NULL -- Hex color code for calendar event
 );
 
-CREATE INDEX idx_fecha_hora ON citas(fecha_hora);
-
--- Tabla de Historial Médico
-CREATE TABLE historial_medico (
-    historial_id SERIAL PRIMARY KEY,
-    paciente_id INT NOT NULL,
-    doctor_id INT NOT NULL,
-    cita_id INT,
-    diagnostico TEXT,
-    medicamentos TEXT,
-    archivos BYTEA, -- Para almacenar PDFs o imágenes (opcional)
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (paciente_id) REFERENCES pacientes(paciente_id) ON DELETE CASCADE,
-    FOREIGN KEY (doctor_id) REFERENCES doctores(doctor_id) ON DELETE SET NULL,
-    FOREIGN KEY (cita_id) REFERENCES citas(cita_id) ON DELETE SET NULL
+CREATE TABLE patients (
+  id SERIAL PRIMARY KEY,
+  user_id INT UNIQUE NOT NULL REFERENCES users(id),
+  phone VARCHAR(20),
+  address TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
 );
 
--- Tabla de Departamentos (Opcional para clínicas grandes)
-CREATE TABLE departamentos (
-    departamento_id SERIAL PRIMARY KEY,
-    nombre VARCHAR(50) NOT NULL, -- Ej: Urgencias, Laboratorio
-    responsable_id INT,
-    FOREIGN KEY (responsable_id) REFERENCES doctores(doctor_id) ON DELETE SET NULL
+CREATE TABLE doctors (
+  id SERIAL PRIMARY KEY,
+  user_id INT UNIQUE NOT NULL REFERENCES users(id),
+  specialty_id INT NOT NULL REFERENCES specialties(id),
+  phone VARCHAR(20),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
 );
+
+CREATE TABLE appointments (
+  id SERIAL PRIMARY KEY,
+  doctor_id INT NOT NULL REFERENCES doctors(id),
+  patient_id INT NOT NULL REFERENCES patients(id),
+  specialty_id INT NOT NULL REFERENCES specialties(id),
+  start_time TIMESTAMP NOT NULL,
+  end_time TIMESTAMP NOT NULL,
+  status VARCHAR(50) NOT NULL DEFAULT 'scheduled',
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_appointments_doctor_id ON appointments(doctor_id);
+CREATE INDEX idx_appointments_patient_id ON appointments(patient_id);
+CREATE INDEX idx_appointments_start_time ON appointments(start_time);

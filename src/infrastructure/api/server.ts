@@ -1,4 +1,6 @@
+import process from 'process';
 import jwtAuthMiddleware from '../../../auth/jwtAuthMiddleware';
+import apiRateLimiter from '../../../auth/rateLimitMiddleware';
 
 import express, { Request, Response } from 'express';
 import http from 'http';
@@ -23,8 +25,12 @@ const app = express();
 const port = process.env.PORT || 3001;
 app.use(express.json());
 
+// Add rate limiting middleware for /api routes
+app.use('/api', apiRateLimiter);
+
 // Add JWT middleware for /api routes
 app.use('/api', jwtAuthMiddleware);
+
 
 const agendarCita = new AgendarCita();
 
@@ -186,8 +192,6 @@ setupWebSocket(server);
 server.listen(port, undefined, () => {
   logger.info(`API server listening on port ${port}`);
 });
-
-import process from 'process';
 
 // Add graceful shutdown handlers
 let shuttingDown = false;
